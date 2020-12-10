@@ -1,0 +1,7 @@
+## Interface: 900002
+## Title: ShowMyTime
+## Notes: Small Addon Description.. (later)
+## Author: Kebron(ztkmkoo@gmail.com)
+## Version: 0.1
+
+ShowMyTime.lua
