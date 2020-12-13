@@ -2,6 +2,6 @@
 ## Title: ShowMyTime
 ## Notes: Small Addon Description.. (later)
 ## Author: Kebron(ztkmkoo@gmail.com)
-## Version: 0.1
+## Version: 1.0
 
 ShowMyTime.lua
