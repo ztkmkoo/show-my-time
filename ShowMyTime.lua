@@ -7,6 +7,7 @@ local onEvent = {}
 local frame = CreateFrame("Frame", addonName, nil)
 local customEvent = "UNIT_AURA"
 local maxIndex = 40
+local lastReport = 0
 
 function onEvent.UNIT_AURA(event, ...)
     INIT_BUFF_MAP()
@@ -14,17 +15,22 @@ function onEvent.UNIT_AURA(event, ...)
 end
 
 function INIT_BUFF_MAP()
+    -- initialize buff map
+    for k,v in pairs(buffMap) do
+        buffMap[k] = nil
+    end
+      
     for i=1, maxIndex do
-        local name,_,_,_,_,expires = UnitAura("player", i)
+        local name,_,_,_,duration,expirationTime,_,_,_,spellId = UnitAura("player", i)
 
-        if buffMap[name] == nil then
-            buffMap[name] = expires
+        if name == nil then
             return
         end
 
-        local oldExpires = buffMap[name]
-        if expires > oldExpires then
-            buffMap[name] = expires
+        if duration > 0 and spellId ~= 2479 then
+            if buffMap[name] == nil then
+                buffMap[name] = expirationTime
+            end
         end
     end
 end
@@ -36,10 +42,20 @@ function PRINT_EXPIRABLE_BUFF()
 
     local currentTime = GetTime()
 
+    if lastReport > 0 then
+        local elapsedFromLast = currentTime - lastReport
+        if elapsedFromLast < 60 then
+            return
+        end
+    end
+
+    lastReport = currentTime
+
     for name, expires in pairs(buffMap) do
         local remainingSeconds = expires - currentTime
         if remainingSeconds <= 0 then
             print(name .. " expired.")
+            buffMap[name] = nil
             return
         end
 
@@ -47,7 +63,7 @@ function PRINT_EXPIRABLE_BUFF()
 
         if remainingMinutes < CHECK_BUFF_MIN_MINUTES then
             remainingMinutes = math.floor(remainingMinutes)
-            print(name .. " remaining " .. remainingMinutes .. " minutes. Less than 60 minutes.")
+            print(name .. " remaining " .. remainingMinutes .. " minutes. Less than " .. CHECK_BUFF_MIN_MINUTES .. " minutes.")
         end
     end      
 end
