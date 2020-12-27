@@ -1,3 +1,4 @@
+local app = select(2, ...);
 local timer = 0
 local UPDATE_INTERVAL = 60
 local CHECK_BUFF_MIN_MINUTES = 10
@@ -16,8 +17,13 @@ end
 
 function INIT_BUFF_MAP()
     -- initialize buff map
-    for k,v in pairs(buffMap) do
-        buffMap[k] = nil
+    for _, v in ipairs(app.SpellIdDB) do
+        buffMap[v] = -1;
+
+        local name = = GetSpellInfo(v)
+        app.SpellNameDB[v] = name
+
+        print(v .. ": " .. name)
     end
       
     for i=1, maxIndex do
@@ -27,10 +33,8 @@ function INIT_BUFF_MAP()
             return
         end
 
-        if duration > 0 and spellId ~= 2479 then
-            if buffMap[name] == nil then
-                buffMap[name] = expirationTime
-            end
+        if duration > 0 then
+            buffMap[spellId] = expirationTime
         end
     end
 end
@@ -44,26 +48,33 @@ function PRINT_EXPIRABLE_BUFF()
 
     if lastReport > 0 then
         local elapsedFromLast = currentTime - lastReport
-        if elapsedFromLast < 60 then
+        if elapsedFromLast < UPDATE_INTERVAL then
             return
         end
     end
 
     lastReport = currentTime
 
-    for name, expires in pairs(buffMap) do
-        local remainingSeconds = expires - currentTime
-        if remainingSeconds <= 0 then
-            print(name .. " expired.")
-            buffMap[name] = nil
-            return
-        end
+    for spellId, expires in pairs(buffMap) do
+        name = app.SpellNameDB[spellId]
 
-        local remainingMinutes = remainingSeconds / 60
+        if expires < 0 then
+            print(name .. " is not registered.")
+        else
+            local remainingSeconds = expires - currentTime
+            if remainingSeconds <= 0 then
+                print(name .. " expired.")
+                buffMap[name] = -1
+                return
+            end
 
-        if remainingMinutes < CHECK_BUFF_MIN_MINUTES then
-            remainingMinutes = math.floor(remainingMinutes)
-            print(name .. " remaining " .. remainingMinutes .. " minutes. Less than " .. CHECK_BUFF_MIN_MINUTES .. " minutes.")
+            local remainingMinutes = remainingSeconds / 60
+
+            if remainingMinutes < CHECK_BUFF_MIN_MINUTES then
+                remainingMinutes = math.floor(remainingMinutes)
+                remainingSeconds = remainingSeconds - remainingMinutes * 60
+                print(name .. " remaining " .. remainingMinutes .. " min" remainingSeconds .. "s. Less than " .. CHECK_BUFF_MIN_MINUTES .. " minutes.")
+            end
         end
     end      
 end

@@ -5,3 +5,4 @@
 ## Version: 1.0.1
 
 ShowMyTime.lua
+db/Spells.lua
